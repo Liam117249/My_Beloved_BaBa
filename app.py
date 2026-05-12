@@ -5,16 +5,15 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from PIL import Image
 
-# Load custom page icon image
-# Place your icon image (e.g. icon.png) in the same folder as app.py
+# Load page icon
 try:
-    page_icon = Image.open("icon.png")
+    _icon = Image.open("icon.png")
 except FileNotFoundError:
-    page_icon = "🕯️"  # fallback if image is missing
+    _icon = "🕯️"
 
 st.set_page_config(
     page_title="Samsara — A Story of BaBa",
-    page_icon=page_icon,
+    page_icon=_icon,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -182,9 +181,15 @@ ERA_COLORS = {
 }
 
 with st.sidebar:
+    # Sidebar header image
+    try:
+        sidebar_img = Image.open("icon.png")
+        st.image(sidebar_img, use_container_width=True)
+    except FileNotFoundError:
+        st.markdown("<div style='text-align:center; font-size:2rem;'>🕯️</div>", unsafe_allow_html=True)
+
     st.markdown("""
-    <div style='text-align:center; padding: 1rem 0 0.5rem;'>
-        <div style='font-size: 2rem;'>🕯️</div>
+    <div style='text-align:center; padding: 0.2rem 0 0.5rem;'>
         <div style='font-family: Lora, serif; font-size: 1.1rem; color: #3D2B1F; font-weight: 600;'>Samsara</div>
         <div style='font-size: 0.78rem; color: #8C7560; margin-top: 2px;'>A story of BaBa & me</div>
     </div>
