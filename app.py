@@ -143,7 +143,7 @@ footer { visibility: hidden; }
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data.csv")
+    df = pd.read_csv("baba_memories_dataset.csv")
     def get_era(stage):
         if 'Early Childhood' in stage or stage == 'Childhood':
             return 'Childhood'
