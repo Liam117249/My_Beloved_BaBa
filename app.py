@@ -3,10 +3,18 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from PIL import Image
+
+# Load custom page icon image
+# Place your icon image (e.g. icon.png) in the same folder as app.py
+try:
+    page_icon = Image.open("icon.png")
+except FileNotFoundError:
+    page_icon = "🕯️"  # fallback if image is missing
 
 st.set_page_config(
     page_title="Samsara — A Story of BaBa",
-    page_icon="🕯️",
+    page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -135,7 +143,7 @@ footer { visibility: hidden; }
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("baba_memories_dataset.csv")
+    df = pd.read_csv("data.csv")
     def get_era(stage):
         if 'Early Childhood' in stage or stage == 'Childhood':
             return 'Childhood'
