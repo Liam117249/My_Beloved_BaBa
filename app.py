@@ -181,7 +181,6 @@ ERA_COLORS = {
 }
 
 with st.sidebar:
-    # Sidebar header image
     try:
         sidebar_img = Image.open("icon.png")
         st.image(sidebar_img, use_container_width=True)
@@ -230,27 +229,26 @@ if page == "📖 Story Overview":
         st.markdown("""
         <div class='story-quote'>
         "No matter how early I woke up in the morning, BaBa was always awake before me.
-        He had already boiled water and was waiting for me, preparing my favorite breakfast —
+        He had already boiled water and was waiting for me, preparing my favorite breakfast,
         Mont T, along with plain tea or sometimes coffee."
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <p style='color:#4A3728; line-height:1.9; font-size:0.97rem;'>
-        BaBa — the husband of my grandmother's sister — lived just across the yard from my childhood home
-        in Myanmar. He was not my grandfather by blood, but he was the one who held me when my father's
-        discipline was too harsh. He was the one who applied medicine to my wounds, shared stories at
-        night, and gave me his own clothing when I had none.
+        BaBa was the husband of my grandmother's sister. He lived just across the yard from my home in Myanmar.
+        He was not my grandfather by blood. But he was the one who held me when things were hard at home.
+        He put medicine on my wounds, told me stories at night, and gave me his own clothes when I had none.
         </p>
         <p style='color:#4A3728; line-height:1.9; font-size:0.97rem;'>
-        As I moved away — to high school in Monywa, then university in Mandalay — my visits grew rarer.
-        Life pulled me forward. In November 2020, during my fourth university year, BaBa suffered a
-        sudden stroke. He passed away at 72. I had planned to bring him a good bottle of liquor after
-        my midterms. I never got the chance.
+        When I moved away for high school and then university, I visited him less and less.
+        Life moved fast and I kept going forward. In November 2020, during my fourth year at university,
+        BaBa had a sudden stroke and passed away at age 72.
+        I had planned to bring him a good bottle of liquor after my midterms. I never got the chance.
         </p>
         <p style='color:#4A3728; line-height:1.9; font-size:0.97rem;'>
-        This project transforms those memories into data — not to make loss feel mechanical,
-        but to find the patterns that grief alone cannot see clearly.
+        This project turns those memories into data. Not to make loss feel cold,
+        but to see the patterns that grief alone cannot show clearly.
         </p>
         """, unsafe_allow_html=True)
 
@@ -300,7 +298,7 @@ elif page == "📊 Data Visualizations":
     st.markdown("<h2 class='section-header' style='margin-top:0;'>Data visualizations</h2>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:#8C7560; font-size:0.9rem;'>Filtered to {len(filtered_df)} records · {year_range[0]}–{year_range[1]}</p>", unsafe_allow_html=True)
 
-    # Chart 1: Dual axis — visits + emotion over time
+    # Chart 1: Dual axis — visits + emotion over time (unchanged)
     st.markdown("<div class='section-header'>Visit frequency & emotional impact over time</div>", unsafe_allow_html=True)
 
     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
@@ -342,7 +340,7 @@ elif page == "📊 Data Visualizations":
     col_a, col_b = st.columns(2)
 
     with col_a:
-        # Chart 2: Avg emotional impact by era
+        # Chart 2: Avg emotional impact by era (unchanged)
         st.markdown("<div class='section-header'>Avg. emotional impact by era</div>", unsafe_allow_html=True)
         era_data = filtered_df.groupby('era')['emotional_impact_score'].mean().reset_index()
         era_data.columns = ['era', 'avg_impact']
@@ -371,68 +369,69 @@ elif page == "📊 Data Visualizations":
         st.plotly_chart(fig2, use_container_width=True)
 
     with col_b:
-        # Chart 3: Memory category donut
-        st.markdown("<div class='section-header'>Memory category distribution</div>", unsafe_allow_html=True)
-        cat_counts = filtered_df['memory_category'].value_counts().reset_index()
-        cat_counts.columns = ['category', 'count']
-        top5 = cat_counts.head(5)
-        other_count = cat_counts.iloc[5:]['count'].sum()
-        if other_count > 0:
-            top5 = pd.concat([top5, pd.DataFrame([{'category': 'Other', 'count': other_count}])], ignore_index=True)
-
-        fig3 = go.Figure(go.Pie(
-            labels=top5['category'],
-            values=top5['count'],
-            hole=0.55,
-            marker_colors=['#5B9E8F','#C4956A','#7F77DD','#D4715A','#D4537E','#B4B2A9'],
-            textfont=dict(size=11)
-        ))
+        # Chart 3: Strip plot — every individual emotional impact score by era.
+        # Each dot is one memory/year. Nothing is averaged or hidden.
+        # Hover shows the year, memory description, and category.
+        st.markdown("<div class='section-header'>Emotional impact scores by era</div>", unsafe_allow_html=True)
+        strip_df = filtered_df.copy()
+        strip_df['era'] = pd.Categorical(strip_df['era'], categories=ERA_ORDER, ordered=True)
+        fig3 = px.strip(
+            strip_df,
+            x='emotional_impact_score',
+            y='era',
+            color='era',
+            color_discrete_map=ERA_COLORS,
+            hover_data=['year', 'memory_description', 'memory_category'],
+            labels={
+                'emotional_impact_score': 'Emotional impact (1–10)',
+                'era': ''
+            }
+        )
+        fig3.update_traces(jitter=0.4, marker=dict(size=9, opacity=0.8))
         fig3.update_layout(
             plot_bgcolor='#FAF7F2', paper_bgcolor='#FAF7F2',
             font=dict(family='DM Sans', color='#3D2B1F'),
-            margin=dict(t=20, b=20),
+            margin=dict(t=20, b=20, l=10, r=10),
             height=300,
-            legend=dict(font=dict(size=10), orientation='v', x=1.0)
+            showlegend=False,
+            xaxis=dict(range=[0, 11], gridcolor='#E8DDD0'),
+            yaxis=dict(gridcolor='#E8DDD0')
         )
         st.plotly_chart(fig3, use_container_width=True)
 
-    # Chart 4: Scatter — closeness vs visits
-    st.markdown("<div class='section-header'>Relationship closeness vs. visit frequency</div>", unsafe_allow_html=True)
-    scatter_df = filtered_df.dropna(subset=['relationship_closeness_score'])
-    fig4 = px.scatter(
-        scatter_df,
-        x='visit_frequency_to_baba_per_year',
-        y='relationship_closeness_score',
-        color='era',
-        size='emotional_impact_score',
-        hover_data=['year', 'memory_description', 'emotional_impact_score'],
-        color_discrete_map=ERA_COLORS,
-        labels={
-            'visit_frequency_to_baba_per_year': 'Visits per year',
-            'relationship_closeness_score': 'Closeness score (1–10)',
-            'era': 'Life era'
-        },
-        size_max=20
-    )
+    # Chart 4: Memory category ranked bar with color = avg emotional impact.
+    # Sorted by count. Color scale shows which categories carried the most weight emotionally.
+    st.markdown("<div class='section-header'>What kinds of memories stand out most</div>", unsafe_allow_html=True)
+    cat_df = filtered_df.groupby('memory_category').agg(
+        count=('memory_category', 'count'),
+        avg_impact=('emotional_impact_score', 'mean')
+    ).reset_index().sort_values('count', ascending=True)
+
+    fig4 = go.Figure()
+    fig4.add_trace(go.Bar(
+        x=cat_df['count'],
+        y=cat_df['memory_category'],
+        orientation='h',
+        marker=dict(
+            color=cat_df['avg_impact'],
+            colorscale=[[0, '#F2DEC8'], [0.5, '#C4956A'], [1, '#3D2B1F']],
+            colorbar=dict(title='Avg impact', thickness=12, len=0.6),
+            showscale=True
+        ),
+        text=cat_df['count'],
+        textposition='outside',
+        textfont=dict(size=11),
+        hovertemplate='<b>%{y}</b><br>Memories: %{x}<br>Avg impact: %{marker.color:.1f}/10<extra></extra>'
+    ))
     fig4.update_layout(
         plot_bgcolor='#FAF7F2', paper_bgcolor='#FAF7F2',
         font=dict(family='DM Sans', color='#3D2B1F'),
-        margin=dict(t=20, b=30, l=10, r=10),
-        height=360,
-        legend=dict(orientation='h', y=1.05, x=0)
+        xaxis=dict(title='Number of memories', gridcolor='#E8DDD0'),
+        yaxis=dict(gridcolor='#E8DDD0'),
+        margin=dict(t=20, b=30, l=10, r=80),
+        height=380,
+        showlegend=False
     )
-    fig4.update_xaxes(gridcolor='#E8DDD0')
-    fig4.update_yaxes(gridcolor='#E8DDD0', range=[0, 12])
-    if 2020 in scatter_df['year'].values:
-        row_2020 = scatter_df[scatter_df['year'] == 2020].iloc[0]
-        fig4.add_annotation(
-            x=row_2020['visit_frequency_to_baba_per_year'],
-            y=row_2020['relationship_closeness_score'],
-            text="2020 — BaBa passed",
-            showarrow=True, arrowhead=2,
-            arrowcolor="#D4715A", font=dict(color="#D4715A", size=11),
-            ax=60, ay=-30
-        )
     st.plotly_chart(fig4, use_container_width=True)
 
 
@@ -441,26 +440,26 @@ elif page == "🔍 Key Insights":
     st.markdown("<h2 class='section-header' style='margin-top:0;'>Key insights</h2>", unsafe_allow_html=True)
 
     insights = [
-        ("The drift was gradual, then absolute",
-         "Visit frequency dropped from ~50/year in childhood to 10 during high school, then 4–5 during university, and finally 0 after BaBa's passing. "
-         "No single year felt like abandonment — but the accumulated distance was total."),
-        ("Emotional impact and physical presence are not the same thing",
-         "The correlation between visits and emotional impact is 0.54 — moderate, not perfect. "
-         "The year BaBa died (2020), visits were at their second lowest (2), yet emotional impact reached its maximum (10/10). "
-         "Significance is not measured in frequency."),
-        ("Comfort & Care was the dominant memory theme",
-         "4 out of 28 records are classified as 'Comfort & Care' — the highest single category. "
-         "BaBa's role was fundamentally that of a safe refuge: someone who healed wounds, made breakfast, and never turned me away."),
-        ("Childhood held the richest emotional density",
-         "Average emotional impact during childhood (1998–2012) was 7.47/10 — the highest of any era. "
-         "High school followed closely at 7.33. The university years averaged 6.60, declining steadily as distance grew."),
-        ("Crisis & Loss era was the emotional nadir",
-         "The 2021–2022 period — BaBa's death combined with Myanmar's military coup and leaving university — "
-         "produced the lowest average emotional impact at 4.5/10. Grief compounded by political trauma."),
-        ("The regret of 2019 is data-legible",
-         "One year before BaBa's passing, visit frequency was 4/year and the emotional impact score was 6/10. "
-         "There was a planned gift (a good liquor bottle) that was never delivered. "
-         "The data marks this year with the tag 'Regret' — the only year labeled that way."),
+        ("Visits dropped slowly, then stopped",
+         "I visited BaBa about 50 times a year in childhood. That fell to 10 in high school, then 4 to 5 in university, then 0 after he passed. "
+         "No single year felt like a goodbye. But over time the distance became total."),
+        ("Being there more did not always mean feeling more",
+         "Visits and emotional impact have a 0.54 correlation. That is moderate, not strong. "
+         "In 2020, the year BaBa died, I only visited twice. Yet that year scored 10 out of 10 on emotional impact. "
+         "Presence alone does not explain how much a moment matters."),
+        ("Comfort and care was the most common memory type",
+         "4 out of 28 records fall under Comfort and Care. That is the highest single category. "
+         "BaBa was the person I went to when things went wrong. He made breakfast, treated my wounds, and never turned me away."),
+        ("Childhood had the highest emotional scores",
+         "The average emotional impact in childhood was 7.47 out of 10. High school was 7.33. University dropped to 6.60. "
+         "The further away I moved, the lower the scores became."),
+        ("The Crisis and Loss years were the hardest",
+         "From 2021 to 2022, the average emotional impact was 4.5 out of 10. That is the lowest of any era. "
+         "BaBa had just passed. Myanmar was in political crisis. I had left university. Everything happened at once."),
+        ("2019 is the only year tagged as Regret",
+         "That year I visited 4 times and the emotional score was 6 out of 10. "
+         "I had planned to bring BaBa a bottle of good liquor. I never did. "
+         "It is the only year in the data with that tag."),
     ]
 
     for i, (title, body) in enumerate(insights):
@@ -471,10 +470,10 @@ elif page == "🔍 Key Insights":
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Best & worst moments</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Best and worst moments</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("**Highest impact moments (score ≥ 9)**")
+        st.markdown("**Highest impact moments (score 9 or above)**")
         best = df[df['emotional_impact_score'] >= 9][['year','memory_category','emotional_impact_score','memory_description']].sort_values('year')
         for _, row in best.iterrows():
             st.markdown(f"""
@@ -486,7 +485,7 @@ elif page == "🔍 Key Insights":
             </div>
             """, unsafe_allow_html=True)
     with col2:
-        st.markdown("**Lowest impact moments (score ≤ 5)**")
+        st.markdown("**Lowest impact moments (score 5 or below)**")
         worst = df[df['emotional_impact_score'] <= 5][['year','memory_category','emotional_impact_score','memory_description']].sort_values('year')
         for _, row in worst.iterrows():
             st.markdown(f"""
@@ -511,30 +510,30 @@ elif page == "🎯 Decision-Making":
 
     st.markdown("""
     <p style='color:#4A3728; font-size:0.97rem; line-height:1.9;'>
-    The data presents a clear behavioral pattern: as physical distance grew, visit frequency
-    collapsed — from 50 visits/year in childhood, to 5 during early university, to 2 in BaBa's
-    final year. Yet emotional impact peaked exactly at that last year. This is the central paradox
-    the data reveals: <b>we understand the value of someone most clearly when we can no longer reach them.</b>
+    The data shows one clear pattern. As I moved further away, I visited BaBa less.
+    Visits went from 50 a year in childhood, down to 5 in early university, and just 2 in his final year.
+    But emotional impact was highest in that last year. The data shows that
+    <b>we often understand how much someone matters only after we can no longer reach them.</b>
     </p>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Three data-supported decisions</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Three decisions based on the data</div>", unsafe_allow_html=True)
 
     decisions = [
-        ("Prioritize presence before loss makes it impossible",
-         "Visit frequency dropped 96% from childhood to BaBa's final year (50 → 2 visits). "
-         "The data shows that I had 4–5 opportunities per year during university but did not always use them for visits home. "
-         "Decision: in the future, treat visits to aging loved ones as non-negotiable calendar commitments — not optional additions.",
+        ("Visit before it is too late",
+         "Visits dropped 96 percent from childhood to BaBa's last year, from 50 down to 2. "
+         "During university I had 4 to 5 chances a year to go home but often did not use them. "
+         "Going forward, I will treat visits to aging loved ones as fixed plans, not optional ones.",
          "#5B9E8F"),
-        ("Deliver gestures before they become regrets",
-         "2019 is the only year labeled 'Regret' in the dataset. The planned gift (a bottle of good liquor) was never delivered. "
-         "The emotional impact score for that year was 6/10 — lower than any childhood year. "
-         "Decision: act on intentions immediately. Deferred kindness has an expiry date.",
+        ("Do not delay kind gestures",
+         "2019 is the only year in the dataset tagged as Regret. I planned to bring BaBa a gift but never did. "
+         "The emotional score that year was 6 out of 10, lower than any year in childhood. "
+         "If I plan to do something kind, I will do it now.",
          "#C4956A"),
-        ("Measure closeness by quality, not quantity",
-         "The scatter data shows a 0.54 correlation between visits and emotional impact — meaningful, but far from absolute. "
-         "The 2020 data point (2 visits, closeness 10, impact 10) shows that depth of connection outlasts frequency. "
-         "Decision: when visits are impossible (due to distance, conflict, or circumstance), invest in the quality of each contact — calls, letters, presence of mind.",
+        ("Quality matters more than quantity",
+         "The correlation between visits and emotional impact is 0.54. It matters, but it is not everything. "
+         "In 2020 I only visited twice, yet the closeness and impact scores were both 10 out of 10. "
+         "When visits are not possible, I will focus on making each call or message count.",
          "#7F77DD"),
     ]
 
@@ -547,12 +546,12 @@ elif page == "🎯 Decision-Making":
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Limitations of these decisions</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Limits of these decisions</div>", unsafe_allow_html=True)
     limits = [
-        "The dataset covers only one relationship. These findings may not generalize to all bonds.",
-        "Visit frequency was estimated from memory — actual numbers may differ slightly.",
-        "External factors (university schedule, coup, pandemic, finances) constrained visits in ways the data alone cannot fully capture.",
-        "Emotional impact scores are subjective and retrospective — scored in 2025 looking back, not in real-time.",
+        "This dataset covers only one relationship. The findings may not apply to others.",
+        "Visit counts were estimated from memory. The exact numbers may be slightly off.",
+        "Outside events like the military coup, the pandemic, and financial limits affected how often I could visit. The data does not fully capture that.",
+        "All emotional scores were assigned in 2025, looking back. They reflect how I feel now, not how I felt at the time.",
     ]
     for lim in limits:
         st.markdown(f"<div style='color:#8C7560; font-size:0.88rem; padding: 4px 0 4px 12px; border-left: 2px solid #E8DDD0;'>⚠ {lim}</div>", unsafe_allow_html=True)
@@ -560,31 +559,30 @@ elif page == "🎯 Decision-Making":
 
 # ─── PAGE 5: ETHICS ──────────────────────────────────────────────────────────
 elif page == "⚖️ Ethics & Responsibility":
-    st.markdown("<h2 class='section-header' style='margin-top:0;'>Ethics & responsibility</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='section-header' style='margin-top:0;'>Ethics and responsibility</h2>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("""
         <div class='ethics-block'>
-            <div class='ethics-title'>🔒 Privacy statement</div>
+            <div class='ethics-title'>🔒 Privacy</div>
             <p style='color:#4A3728; font-size:0.9rem; line-height:1.75; margin:0;'>
-            This dataset contains no real full names. BaBa is a relational term, not an identifier.
-            Grandma Cho is referred to by a common name only. No addresses, ID numbers, medical records,
-            or third-party personal data are included. All emotional scores are self-generated by the author.
-            The dataset reflects only the author's own memories and perceptions.
+            No real full names are used in this dataset. BaBa is a family term, not an identifier.
+            Grandma Cho is referred to by a common name only. No addresses, ID numbers, or private records are included.
+            All scores were created by me and reflect only my own memories.
             </p>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class='ethics-block'>
-            <div class='ethics-title'>⚠️ Bias & limitations</div>
+            <div class='ethics-title'>⚠️ Bias and limits</div>
             <ul style='color:#4A3728; font-size:0.9rem; line-height:1.9; margin:0; padding-left: 1.2rem;'>
-                <li><b>Memory bias:</b> All data is reconstructed from personal recollection. Early years (1998–2005) especially may be idealized.</li>
-                <li><b>Small dataset:</b> 28 rows representing 27 years. Statistical conclusions should be held lightly.</li>
-                <li><b>Subjective scoring:</b> Emotional impact and closeness scores were assigned by the author — they are inherently personal, not objective.</li>
-                <li><b>Retrospective framing:</b> Knowing BaBa passed in 2020 may have inflated or colored scores for years before.</li>
-                <li><b>Missing data:</b> Relationship closeness scores are absent for post-2020 rows (BaBa was no longer present).</li>
+                <li><b>Memory bias.</b> All data comes from personal memory. Early years may be idealized.</li>
+                <li><b>Small dataset.</b> 28 rows covering 27 years. Numbers should not be treated as hard facts.</li>
+                <li><b>Subjective scores.</b> Emotional impact and closeness were scored by me. They are personal, not objective.</li>
+                <li><b>Looking back.</b> Knowing BaBa passed in 2020 may have affected how I scored earlier years.</li>
+                <li><b>Missing data.</b> Closeness scores are blank for years after 2020 because BaBa was no longer here.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -592,30 +590,29 @@ elif page == "⚖️ Ethics & Responsibility":
     with col2:
         st.markdown("""
         <div class='ethics-block'>
-            <div class='ethics-title'>📊 Visualization justification</div>
+            <div class='ethics-title'>📊 Why I chose each chart</div>
             <ul style='color:#4A3728; font-size:0.9rem; line-height:1.9; margin:0; padding-left: 1.2rem;'>
-                <li><b>Dual-axis line chart:</b> Chosen to show two variables (visits + emotion) across time simultaneously. Risk: dual axes can mislead scale perception — both axes are clearly labeled.</li>
-                <li><b>Horizontal bar chart:</b> Used for era comparisons because category names are long and benefit from horizontal space.</li>
-                <li><b>Donut chart:</b> Shows memory category proportion at a glance. Risk: small slices are hard to compare — "Other" bucket reduces clutter.</li>
-                <li><b>Bubble scatter plot:</b> Visits vs. closeness with bubble size = emotional impact. Reveals the paradox of 2020 directly. Risk: overlapping points — hover tooltips provide detail.</li>
+                <li><b>Dual-axis line chart.</b> Shows visits and emotion together over time. Both axes are labeled clearly to avoid confusion.</li>
+                <li><b>Horizontal bar chart.</b> Compares average emotional impact across eras. The horizontal layout fits the long era names.</li>
+                <li><b>Strip plot.</b> Shows every single data point by era. Nothing is averaged or hidden. Each dot is one year of memory.</li>
+                <li><b>Ranked bar with color scale.</b> Shows which memory types appear most often and how emotionally heavy each type was on average.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class='ethics-block'>
-            <div class='ethics-title'>🎯 Responsible decision statement</div>
+            <div class='ethics-title'>🎯 Responsible use</div>
             <p style='color:#4A3728; font-size:0.9rem; line-height:1.75; margin:0;'>
-            The decisions on this dashboard are personal behavioral reflections — not prescriptions for others.
-            No claim is made that these patterns are universal. The author acknowledges that geopolitical events
-            (Myanmar coup, displacement) severely limited choices in ways data cannot fully represent.
-            This project does not monetize or expose any third party's personal data.
-            The dataset exists solely as a reflective academic exercise.
+            The decisions on this dashboard are personal reflections. They are not advice for others.
+            I do not claim these patterns apply to everyone. Outside events like the Myanmar coup and displacement
+            limited my choices in ways the data cannot fully show.
+            No one else's private data is used or shared here. This project is an academic exercise only.
             </p>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Buddha's teaching — the project's guiding frame</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>The guiding idea behind this project</div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='story-quote'>
     "Nothing is forever. Everything will eventually come to an end. The root of suffering is attachment.
@@ -623,8 +620,8 @@ elif page == "⚖️ Ethics & Responsibility":
     to break free from the cycle of Samsara."
     </div>
     <p style='color:#8C7560; font-size:0.85rem; margin-top: -0.5rem;'>
-    This project does not claim to resolve grief or offer spiritual prescriptions.
-    It uses the concept of Samsara as a reflective lens — a way of understanding why the cycle of
-    attachment and loss is universal, and what data can and cannot tell us about it.
+    This project does not offer spiritual answers or claim to resolve grief.
+    Samsara is used here as a lens to understand why attachment and loss repeat across every life,
+    and what data can and cannot tell us about that.
     </p>
     """, unsafe_allow_html=True)
