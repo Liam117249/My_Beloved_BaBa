@@ -369,33 +369,70 @@ elif page == "📊 Data Visualizations":
         st.plotly_chart(fig2, use_container_width=True)
 
     with col_b:
-        # Chart 3: Strip plot — every individual emotional impact score by era.
-        # Each dot is one memory/year. Nothing is averaged or hidden.
-        # Hover shows the year, memory description, and category.
-        st.markdown("<div class='section-header'>Emotional impact scores by era</div>", unsafe_allow_html=True)
-        strip_df = filtered_df.copy()
-        strip_df['era'] = pd.Categorical(strip_df['era'], categories=ERA_ORDER, ordered=True)
-        fig3 = px.strip(
-            strip_df,
-            x='emotional_impact_score',
-            y='era',
-            color='era',
-            color_discrete_map=ERA_COLORS,
-            hover_data=['year', 'memory_description', 'memory_category'],
-            labels={
-                'emotional_impact_score': 'Emotional impact (1–10)',
-                'era': ''
-            }
-        )
-        fig3.update_traces(jitter=0.4, marker=dict(size=9, opacity=0.8))
+        # Chart 3: Memory Timeline — Gantt-style by category.
+        # Each memory record is a colored block placed at its year on the x-axis,
+        # stacked by memory category on the y-axis.
+        # Rare categories stand out visually. The full 27-year story reads left to right.
+        st.markdown("<div class='section-header'>Memory timeline by category</div>", unsafe_allow_html=True)
+
+        gantt_df = filtered_df.copy()
+
+        # Assign a unique color per memory category
+        all_cats = gantt_df['memory_category'].unique().tolist()
+        cat_palette = [
+            '#5B9E8F','#C4956A','#7F77DD','#D4715A','#D4537E',
+            '#6BA8C4','#A8B86B','#B47CC4','#888780','#C4A46B'
+        ]
+        cat_color_map = {cat: cat_palette[i % len(cat_palette)] for i, cat in enumerate(sorted(all_cats))}
+
+        # Each block spans half a year for visual clarity
+        fig3 = go.Figure()
+        for _, row in gantt_df.iterrows():
+            fig3.add_trace(go.Bar(
+                x=[0.7],
+                y=[row['memory_category']],
+                base=[row['year'] - 0.35],
+                orientation='h',
+                marker=dict(
+                    color=cat_color_map[row['memory_category']],
+                    opacity=0.4 + 0.06 * row['emotional_impact_score'],
+                    line=dict(color='white', width=1)
+                ),
+                hovertemplate=(
+                    f"<b>{int(row['year'])}</b><br>"
+                    f"Category: {row['memory_category']}<br>"
+                    f"Impact: {row['emotional_impact_score']}/10<br>"
+                    f"{row['memory_description']}<extra></extra>"
+                ),
+                showlegend=False
+            ))
+
+        # 2020 marker line
+        if 2020 in gantt_df['year'].values:
+            fig3.add_vline(
+                x=2020, line_dash="dash",
+                line_color="#D4715A", line_width=1.5, opacity=0.7
+            )
+            fig3.add_annotation(
+                x=2020, y=len(all_cats) - 0.3,
+                text="2020", showarrow=False,
+                font=dict(color="#D4715A", size=10),
+                xanchor='center'
+            )
+
         fig3.update_layout(
             plot_bgcolor='#FAF7F2', paper_bgcolor='#FAF7F2',
             font=dict(family='DM Sans', color='#3D2B1F'),
-            margin=dict(t=20, b=20, l=10, r=10),
+            barmode='overlay',
+            xaxis=dict(
+                title='Year',
+                gridcolor='#E8DDD0',
+                range=[gantt_df['year'].min() - 0.5, gantt_df['year'].max() + 0.5],
+                dtick=4
+            ),
+            yaxis=dict(gridcolor='#E8DDD0', title=''),
+            margin=dict(t=20, b=30, l=10, r=10),
             height=300,
-            showlegend=False,
-            xaxis=dict(range=[0, 11], gridcolor='#E8DDD0'),
-            yaxis=dict(gridcolor='#E8DDD0')
         )
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -594,7 +631,7 @@ elif page == "⚖️ Ethics & Responsibility":
             <ul style='color:#4A3728; font-size:0.9rem; line-height:1.9; margin:0; padding-left: 1.2rem;'>
                 <li><b>Dual-axis line chart.</b> Shows visits and emotion together over time. Both axes are labeled clearly to avoid confusion.</li>
                 <li><b>Horizontal bar chart.</b> Compares average emotional impact across eras. The horizontal layout fits the long era names.</li>
-                <li><b>Strip plot.</b> Shows every single data point by era. Nothing is averaged or hidden. Each dot is one year of memory.</li>
+                <li><b>Memory timeline (Gantt-style).</b> Places every memory as a colored block at its year, grouped by category. The full 27-year story reads left to right. Block opacity reflects emotional impact — darker means heavier.</li>
                 <li><b>Ranked bar with color scale.</b> Shows which memory types appear most often and how emotionally heavy each type was on average.</li>
             </ul>
         </div>
