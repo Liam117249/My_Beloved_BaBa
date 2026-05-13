@@ -340,118 +340,152 @@ elif page == "📊 Data Visualizations":
     col_a, col_b = st.columns(2)
 
     with col_a:
-        # Chart 2: Avg emotional impact by era (unchanged)
-        st.markdown("<div class='section-header'>Avg. emotional impact by era</div>", unsafe_allow_html=True)
-        era_data = filtered_df.groupby('era')['emotional_impact_score'].mean().reset_index()
-        era_data.columns = ['era', 'avg_impact']
-        era_data = era_data[era_data['era'].isin(ERA_ORDER)]
-        era_data['era'] = pd.Categorical(era_data['era'], categories=ERA_ORDER, ordered=True)
-        era_data = era_data.sort_values('era')
-        era_data['color'] = era_data['era'].map(ERA_COLORS)
+        # Chart 2: Scatter — Visit Frequency vs. Relationship Closeness, colored by era.
+        # Makes the counterintuitive argument that presence ≠ closeness.
+        # 2020: 2 visits, closeness 10 — the outlier that tells the whole story.
+        st.markdown("<div class='section-header'>Does visiting more mean feeling closer?</div>", unsafe_allow_html=True)
 
-        fig2 = go.Figure(go.Bar(
-            x=era_data['avg_impact'].round(2),
-            y=era_data['era'],
-            orientation='h',
-            marker_color=era_data['color'],
-            text=era_data['avg_impact'].round(2),
-            textposition='outside',
-            textfont=dict(size=11)
-        ))
+        scatter_df = filtered_df.dropna(subset=['relationship_closeness_score']).copy()
+        scatter_df['era'] = pd.Categorical(scatter_df['era'], categories=ERA_ORDER, ordered=True)
+
+        fig2 = go.Figure()
+        for era in ERA_ORDER:
+            era_pts = scatter_df[scatter_df['era'] == era]
+            if era_pts.empty:
+                continue
+            is_2020 = era_pts['year'] == 2020
+            fig2.add_trace(go.Scatter(
+                x=era_pts['visit_frequency_to_baba_per_year'],
+                y=era_pts['relationship_closeness_score'],
+                mode='markers',
+                name=era,
+                marker=dict(
+                    color=ERA_COLORS[era],
+                    size=[18 if y == 2020 else 10 for y in era_pts['year']],
+                    symbol=['star' if y == 2020 else 'circle' for y in era_pts['year']],
+                    line=dict(color='white', width=1),
+                    opacity=0.88,
+                ),
+                customdata=era_pts[['year', 'memory_category', 'memory_description']].values,
+                hovertemplate=(
+                    '<b>%{customdata[0]}</b><br>'
+                    'Visits: %{x}/yr<br>'
+                    'Closeness: %{y}/10<br>'
+                    '%{customdata[1]}<br>'
+                    '<i style="color:#8C7560">%{customdata[2]}</i>'
+                    '<extra></extra>'
+                ),
+            ))
+
+        # Annotation for 2020 outlier
+        row_2020 = scatter_df[scatter_df['year'] == 2020]
+        if not row_2020.empty:
+            fig2.add_annotation(
+                x=row_2020['visit_frequency_to_baba_per_year'].values[0],
+                y=row_2020['relationship_closeness_score'].values[0],
+                text="2020 — 2 visits,<br>closeness 10",
+                showarrow=True, arrowhead=2,
+                arrowcolor='#D4715A',
+                font=dict(color='#D4715A', size=10),
+                ax=55, ay=-38,
+                bgcolor='#FDF5EC', bordercolor='#D4715A', borderwidth=1,
+                borderpad=4,
+            )
+
         fig2.update_layout(
             plot_bgcolor='#FAF7F2', paper_bgcolor='#FAF7F2',
             font=dict(family='DM Sans', color='#3D2B1F'),
-            xaxis=dict(range=[0, 11], gridcolor='#E8DDD0', title='Score'),
-            yaxis=dict(gridcolor='#E8DDD0'),
-            margin=dict(t=20, b=20, l=10, r=40),
-            height=300, showlegend=False
+            xaxis=dict(title='Visits per year', gridcolor='#E8DDD0', zeroline=False),
+            yaxis=dict(title='Relationship closeness (1–10)', gridcolor='#E8DDD0', range=[4, 11]),
+            legend=dict(title='Era', font=dict(size=10), bgcolor='rgba(0,0,0,0)'),
+            margin=dict(t=20, b=30, l=10, r=10),
+            height=340,
         )
         st.plotly_chart(fig2, use_container_width=True)
+        st.markdown(
+            "<p style='font-size:0.8rem; color:#8C7560; margin-top:-8px;'>"
+            "⭐ star = 2020 (BaBa's final year). Closeness scores unavailable after 2020."
+            "</p>", unsafe_allow_html=True
+        )
 
     with col_b:
-        # Chart 3: Diverging Bar — Emotional Impact Relative to Average.
-        # Each year is shown as a bar extending left (below average, grief)
-        # or right (above average, warmth) from a central axis.
-        # The story arc becomes immediately readable as a shape.
-        st.markdown("<div class='section-header'>Emotional impact relative to average</div>", unsafe_allow_html=True)
+        # Chart 3: Stacked 100% bar — Memory category composition per life era.
+        # Shows how the KIND of relationship changed across life stages, not just the quantity.
+        # Childhood: rich mix of care, stories, daily life. Later eras: only separation, reunion, grief.
+        st.markdown("<div class='section-header'>How the relationship changed in kind</div>", unsafe_allow_html=True)
 
-        div_df = filtered_df.groupby('year')['emotional_impact_score'].mean().reset_index()
-        div_df.columns = ['year', 'avg_score']
-        overall_avg = filtered_df['emotional_impact_score'].mean()
-        div_df['deviation'] = div_df['avg_score'] - overall_avg
-        div_df['color'] = div_df['deviation'].apply(
-            lambda v: '#5B9E8F' if v >= 0 else '#D4715A'
-        )
-        div_df['label'] = div_df['deviation'].apply(
-            lambda v: f"+{v:.1f}" if v >= 0 else f"{v:.1f}"
-        )
-        div_df = div_df.sort_values('year')
+        CAT_PALETTE = {
+            'Bond Formation':  '#5B9E8F',
+            'Daily Life':      '#6BA8C4',
+            'Comfort & Care':  '#C4956A',
+            'Entertainment':   '#A8B86B',
+            'Storytelling':    '#7F77DD',
+            'Food & Sharing':  '#D4A056',
+            'Clothing & Gift': '#B47CC4',
+            'Concern':         '#D4537E',
+            'Separation':      '#888780',
+            'Reunion':         '#5B8FA8',
+            'Milestone':       '#8FAF5B',
+            'Regret':          '#C47070',
+            'Loss':            '#D4715A',
+            'Political Crisis':'#9E5B5B',
+            'Grief and Reflection': '#A08080',
+            'New Beginning':   '#5B9E8F',
+            'Displacement':    '#8C7560',
+            'Continuity':      '#7AA88C',
+        }
+
+        comp_df = filtered_df.copy()
+        comp_df['era'] = pd.Categorical(comp_df['era'], categories=ERA_ORDER, ordered=True)
+        comp_df = comp_df[comp_df['era'].isin(selected_eras)]
+
+        # Count memories per era × category, then normalise to 100%
+        pivot = comp_df.groupby(['era', 'memory_category']).size().unstack(fill_value=0)
+        pivot_pct = pivot.div(pivot.sum(axis=1), axis=0) * 100
+        pivot_pct = pivot_pct.reindex([e for e in ERA_ORDER if e in pivot_pct.index])
 
         fig3 = go.Figure()
-
-        # Above-average bars (warmth — teal, going right)
-        above = div_df[div_df['deviation'] >= 0]
-        fig3.add_trace(go.Bar(
-            x=above['deviation'],
-            y=above['year'],
-            orientation='h',
-            marker_color='#5B9E8F',
-            name='Above average (warmth)',
-            text=above['label'],
-            textposition='outside',
-            textfont=dict(size=10, color='#5B9E8F'),
-            hovertemplate='<b>%{y}</b><br>Deviation: %{x:+.2f}<br>Avg score: %{customdata:.1f}/10<extra></extra>',
-            customdata=above['avg_score'],
-        ))
-
-        # Below-average bars (grief — coral, going left)
-        below = div_df[div_df['deviation'] < 0]
-        fig3.add_trace(go.Bar(
-            x=below['deviation'],
-            y=below['year'],
-            orientation='h',
-            marker_color='#D4715A',
-            name='Below average (grief)',
-            text=below['label'],
-            textposition='outside',
-            textfont=dict(size=10, color='#D4715A'),
-            hovertemplate='<b>%{y}</b><br>Deviation: %{x:+.2f}<br>Avg score: %{customdata:.1f}/10<extra></extra>',
-            customdata=below['avg_score'],
-        ))
-
-        # BaBa's passing annotation
-        if 2020 in div_df['year'].values:
-            fig3.add_hline(
-                y=2020, line_dash="dash",
-                line_color="#D4715A", line_width=1.2, opacity=0.6
-            )
-            fig3.add_annotation(
-                x=div_df['deviation'].max() * 0.55,
-                y=2020,
-                text="BaBa passed",
-                showarrow=False,
-                font=dict(color="#D4715A", size=9),
-                yshift=8
-            )
+        for cat in pivot_pct.columns:
+            color = CAT_PALETTE.get(cat, '#CCCCCC')
+            vals = pivot_pct[cat]
+            raw_counts = pivot.reindex(pivot_pct.index)[cat]
+            fig3.add_trace(go.Bar(
+                name=cat,
+                x=pivot_pct.index.tolist(),
+                y=vals,
+                marker_color=color,
+                customdata=raw_counts.values,
+                hovertemplate=(
+                    '<b>%{x}</b><br>'
+                    f'{cat}<br>'
+                    'Share: %{y:.1f}%<br>'
+                    'Count: %{customdata}<extra></extra>'
+                ),
+                text=[f"{v:.0f}%" if v >= 7 else "" for v in vals],
+                textposition='inside',
+                textfont=dict(size=9, color='white'),
+            ))
 
         fig3.update_layout(
+            barmode='stack',
             plot_bgcolor='#FAF7F2', paper_bgcolor='#FAF7F2',
             font=dict(family='DM Sans', color='#3D2B1F'),
-            xaxis=dict(
-                title=f'Deviation from overall avg ({overall_avg:.1f})',
-                gridcolor='#E8DDD0',
-                zeroline=True, zerolinecolor='#3D2B1F', zerolinewidth=1.5,
+            xaxis=dict(title='Life era', gridcolor='#E8DDD0', tickangle=-15),
+            yaxis=dict(title='% of memories', gridcolor='#E8DDD0', range=[0, 101]),
+            legend=dict(
+                orientation='v', x=1.01, y=1,
+                font=dict(size=9), bgcolor='rgba(0,0,0,0)',
+                title=dict(text='Category', font=dict(size=10)),
             ),
-            yaxis=dict(
-                gridcolor='#E8DDD0', title='Year',
-                tickmode='linear', dtick=2, tickformat='d'
-            ),
-            legend=dict(orientation='h', y=1.06, x=0, font=dict(size=10)),
-            margin=dict(t=30, b=30, l=10, r=50),
-            height=300,
-            barmode='relative',
+            margin=dict(t=20, b=50, l=10, r=170),
+            height=340,
         )
         st.plotly_chart(fig3, use_container_width=True)
+        st.markdown(
+            "<p style='font-size:0.8rem; color:#8C7560; margin-top:-8px;'>"
+            "Each bar = 100% of memories in that era. Shows how the texture of the relationship narrowed over time."
+            "</p>", unsafe_allow_html=True
+        )
 
     # Chart 4: Memory category ranked bar with color = avg emotional impact.
     # Sorted by count. Color scale shows which categories carried the most weight emotionally.
@@ -646,10 +680,10 @@ elif page == "⚖️ Ethics & Responsibility":
         <div class='ethics-block'>
             <div class='ethics-title'>📊 Why I chose each chart</div>
             <ul style='color:#4A3728; font-size:0.9rem; line-height:1.9; margin:0; padding-left: 1.2rem;'>
-                <li><b>Dual-axis line chart.</b> Shows visits and emotion together over time. Both axes are labeled clearly to avoid confusion.</li>
-                <li><b>Horizontal bar chart.</b> Compares average emotional impact across eras. The horizontal layout fits the long era names.</li>
-                <li><b>Diverging bar chart.</b> Shows each year's average emotional score as a bar going right (above average, warmth) or left (below average, grief) from a centre line. The story arc — childhood warmth, then loss — becomes immediately readable as a shape. The risk of misreading is low because the zero line is labeled with the overall average.</li>
-                <li><b>Ranked bar with color scale.</b> Shows which memory types appear most often and how emotionally heavy each type was on average.</li>
+                <li><b>Dual-axis line chart.</b> Shows visits and emotional impact together over time. Both axes are clearly labeled to avoid misreading the two scales as equivalent.</li>
+                <li><b>Scatter plot — visits vs. closeness.</b> Each dot is one year. Placing visit frequency on the x-axis and relationship closeness on the y-axis tests a direct hypothesis: does visiting more produce a closer bond? The 2020 outlier (2 visits, closeness 10) makes the counterargument visually without needing words. Era color makes temporal clustering readable without cluttering the axes.</li>
+                <li><b>Stacked 100% bar — memory composition by era.</b> Normalising to 100% removes the distortion of unequal record counts per era and focuses the eye on proportion, not volume. It shows how the texture of the relationship narrowed over time — from a rich mix of care, storytelling, and daily life down to only separation, reunion, and grief. The risk of misreading is that equal bar heights imply equal importance; the caption addresses this.</li>
+                <li><b>Ranked bar with color scale.</b> Shows which memory categories appear most often and how emotionally weighted each type was on average. Sorting by count reveals frequency; the color gradient adds a second variable without a second axis.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
