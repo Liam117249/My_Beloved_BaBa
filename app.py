@@ -230,7 +230,7 @@ if page == "📖 Story Overview":
         <div class='story-quote'>
         "No matter how early I woke up in the morning, BaBa was always awake before me.
         He had already boiled water and was waiting for me, preparing my favorite breakfast,
-        Mont T, along with plain tea or sometimes coffee."
+        Mont T Thoke, along with plain tea or sometimes coffee."
         </div>
         """, unsafe_allow_html=True)
 
