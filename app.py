@@ -528,36 +528,30 @@ elif page == "🔍 Key Insights":
     st.markdown("<h2 class='section-header' style='margin-top:0;'>Key insights</h2>", unsafe_allow_html=True)
 
     insights = [
-        ("Visits built up slowly, peaked at 10, then collapsed",
-         "I was not visiting 50 times a year as a toddler — I was being carried there. "
-         "As I grew old enough to walk next door on my own, visits climbed: 6 at age 1, 22 at age 5, and peaking at 50 at age 10. "
-         "Then they fell sharply. High school brought it down to 8–10 a year, university to 4–5, and 2020 — BaBa's final year — to just 2. "
-         "The drift was so gradual that no single year felt like a farewell."),
-        ("Visiting more was correlated with closeness — but did not guarantee it",
-         "The correlation between visit frequency and relationship closeness is 0.60 across all years with available data. "
-         "That is a moderate positive relationship, not a strong one. "
-         "The clearest outlier is 2020: just 2 visits, yet a closeness score of 10 out of 10 — the highest in the entire dataset. "
-         "Physical presence mattered, but it was not the whole story."),
-        ("The relationship narrowed in kind, not just in frequency",
-         "In childhood, memories span at least seven categories: Comfort & Care, Daily Life, Storytelling, Food & Sharing, Clothing & Gift, Entertainment, and Concern. "
-         "By university, the categories had thinned to Separation, Reunion, and Regret. "
-         "It was not only that I visited less. The texture of what we shared — the mornings, the stories, the meals — had already stopped before he did."),
-        ("Comfort and care carried the most records and the heaviest weight",
-         "Comfort & Care is the most frequent memory category, with 4 records out of 28. "
-         "Three of the four score 9 out of 10 on emotional impact. "
-         "BaBa was the person I ran to after being punished, the one who put medicine on my wounds and let me sleep in his house when I needed safety. "
-         "That role appears more in the data than any other."),
-        ("Emotional scores fell as distance grew — but not proportionally",
-         "Average emotional impact in childhood was 7.47 out of 10. High school dropped slightly to 7.33. "
-         "University (Mandalay) fell to 6.60. The Crisis & Loss era hit the lowest at 4.50. "
-         "The decline tracks distance, but not evenly. "
-         "High school still scored almost as high as childhood despite visits dropping by over 70 percent. "
-         "The final year of BaBa's life — 2020 — scored 10, the single highest point in the dataset."),
-        ("2019 is the only year in the data tagged as Regret",
-         "That year I visited 4 times. The emotional score was 6 out of 10. "
-         "I had planned to bring BaBa a good bottle of liquor after my midterm exams. I never did. "
-         "There is only one Regret record in 27 years of data. "
-         "That it sits in the year just before he died is something the data cannot soften."),
+        ("Visits peaked at age 10, then kept falling",
+         "Visits grew as I got older and could walk next door on my own — reaching 50 at age 10. "
+         "After I left for high school, they dropped to 8–10. University brought it to 4–5. "
+         "In 2020, BaBa's last year, I visited just 2 times."),
+        ("More visits meant more closeness — but not always",
+         "Years with more visits were generally closer years. But 2020 breaks that rule: "
+         "only 2 visits, yet a closeness score of 10 — the highest in the whole dataset. "
+         "Being there helped, but it was not the only thing that mattered."),
+        ("The relationship lost its richness before it lost its frequency",
+         "In childhood, memories cover 7 types — meals, stories, comfort, gifts, and more. "
+         "By university, it was mostly just Separation and Reunion. "
+         "I was not only visiting less — we had less and less to share."),
+        ("Comfort & Care stands out most in the data",
+         "It is the most common memory type, with 4 records. Three of those score 9/10. "
+         "BaBa was the person I went to when I was hurt or in trouble. "
+         "No other memory type shows up that often or that strongly."),
+        ("Emotional scores dropped slowly as I moved further away",
+         "Childhood averaged 7.5/10. High school 7.3. University 6.6. Post-2020 dropped to 4.5. "
+         "The decline was steady — except for 2020 itself, which scored 10. "
+         "Distance reduced the quality of the relationship, but not all at once."),
+        ("There is only one Regret in 27 years — and it sits right before he died",
+         "In 2019 I planned to bring BaBa a bottle of liquor after my exams. I never did. "
+         "That is the only Regret record in the entire dataset. "
+         "His health that year looked fine. There was no warning."),
     ]
 
     for i, (title, body) in enumerate(insights):
@@ -608,37 +602,30 @@ elif page == "🎯 Decision-Making":
 
     st.markdown("""
     <p style='color:#4A3728; font-size:0.97rem; line-height:1.9;'>
-    The data tells a story of slow drift. Visits to BaBa grew as I became old enough to walk next door on my own,
-    peaked at 50 in 2008 when I was 10, and then declined every single year after I left home.
-    By 2020 — BaBa's final year — I visited just twice. Yet that year holds the highest emotional impact and
-    closeness scores in the entire dataset: both 10 out of 10.
-    The data shows that <b>closeness did not disappear with distance — but the time to act on it did.</b>
+    Visits peaked at 50 when I was 10, then dropped every year after I left home.
+    By 2020, I was down to 2 visits. That same year scored the highest closeness in the dataset — 10 out of 10.
+    The data shows that <b>I still felt close to BaBa even when I rarely visited. But I ran out of time.</b>
     </p>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Three decisions based on the data</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Three things I will do differently</div>", unsafe_allow_html=True)
 
     decisions = [
-        ("Treat visits to aging loved ones as fixed commitments, not flexible plans",
-         "Between age 10 and BaBa's final year, visits dropped 96 percent — from 50 down to 2. "
-         "During university I had an average of 4 visits per year. "
-         "Each of those was a choice made among competing priorities, and I often chose the easier option. "
-         "The scatter chart shows that even low visit years could produce high closeness — but only if the visits happened at all. "
-         "Going forward, I will schedule visits to people I care about the way I schedule exams: as non-negotiable dates.",
+        ("Visit the people I love — and put it in the calendar",
+         "Visits dropped 96% from age 10 to BaBa's last year. During university, I averaged 4 visits a year. "
+         "I kept telling myself I would go soon. The data shows I never went more than I planned to. "
+         "From now on, I will set fixed dates to visit people I care about — not leave it open.",
          "#5B9E8F"),
-        ("Act on kind intentions immediately — do not wait for the right moment",
-         "2019 is the only year in 27 years of data tagged as Regret. "
-         "Visit frequency that year was 4 — the same as 2018 and 2016. The emotional score was 6 out of 10. "
-         "Nothing about the numbers looked alarming. But I had made a plan — a bottle of good liquor after midterms — and I never followed through. "
-         "BaBa's health status that year is recorded as 'Healthy pre-stroke.' "
-         "There was no visible warning. The data teaches me that the right moment is usually just the present one.",
+        ("Do the kind thing now, not later",
+         "2019 is the only Regret in 27 years of data. I had a simple plan — bring BaBa a bottle of liquor after exams. I did not do it. "
+         "His health looked fine that year. There was no sign anything was wrong. "
+         "I learned that there is no safe 'later'. If I want to do something kind, I should do it now.",
          "#C4956A"),
-        ("When physical presence is not possible, protect the quality of what remains",
-         "Visit frequency and relationship closeness have a correlation of 0.60 — meaningful, but not deterministic. "
-         "The stacked composition chart shows that by my university years, almost all memory categories had collapsed into just Separation and Reunion. "
-         "The relationship had not only become less frequent — it had become less varied. "
-         "When I cannot visit, I will try to preserve variety: a phone call about something specific, a shared memory, a question I have been meaning to ask. "
-         "Presence alone was never the whole relationship.",
+        ("Keep the relationship varied, not just frequent",
+         "By university, almost all my memories with BaBa were only Separation and Reunion — nothing else. "
+         "The relationship had become thin, not just less frequent. "
+         "When I cannot visit, I will still try to share something real — a story, a question, a memory. "
+         "That is what kept us close even in 2020.",
          "#7F77DD"),
     ]
 
@@ -651,13 +638,12 @@ elif page == "🎯 Decision-Making":
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='section-header'>Limits of these decisions</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Limitations</div>", unsafe_allow_html=True)
     limits = [
-        "This dataset covers one relationship across 27 years. Patterns that appear here may not hold for others or even for my other relationships.",
-        "Visit counts from childhood were estimated from memory decades later. Early-year figures (ages 1–12) carry higher uncertainty than later ones.",
-        "The visit frequency growth from ages 1 to 10 reflects increasing independence as a child, not a controlled variable. It cannot be directly compared to the university-era decline, which was driven by geography.",
-        "Scores for emotional impact and closeness were assigned in 2025, looking back. Knowing how BaBa's story ends almost certainly influenced how I rated earlier years — especially the ones just before 2020.",
-        "Outside forces — the Myanmar military coup, the pandemic, financial constraints, and displacement — shaped how often I could visit in ways the dataset cannot quantify. The decisions above assume more agency than I always had.",
+        "This is one relationship, 28 data points. The patterns here may not apply to other people or other relationships.",
+        "Visit counts for early childhood are estimates from memory. They are not exact.",
+        "Emotional and closeness scores were assigned in 2025, looking back. Knowing BaBa passed away likely affected how I scored earlier years.",
+        "Some years I could not visit more even if I wanted to — due to the coup, displacement, and money. The data does not show those barriers.",
     ]
     for lim in limits:
         st.markdown(f"<div style='color:#8C7560; font-size:0.88rem; padding: 5px 0 5px 12px; margin: 3px 0; border-left: 2px solid #E8DDD0;'>⚠ {lim}</div>", unsafe_allow_html=True)
