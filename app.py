@@ -529,10 +529,10 @@ elif page == "🔍 Key Insights":
 
     insights = [
         ("Visits peaked at age 10, then kept falling",
-         "Visits grew as I got older and could walk next door on my own — reaching 50 at age 10. "
+         "Visits grew as I got older and could walk next door on my own and it reached 50 at age 10. "
          "After I left for high school, they dropped to 8–10. University brought it to 4–5. "
          "In 2020, BaBa's last year, I visited just 2 times."),
-        ("More visits meant more closeness — but not always",
+        ("More visits meant more closeness but not always",
          "Years with more visits were generally closer years. But 2020 breaks that rule: "
          "only 2 visits, yet a closeness score of 10 — the highest in the whole dataset. "
          "Being there helped, but it was not the only thing that mattered."),
@@ -548,7 +548,7 @@ elif page == "🔍 Key Insights":
          "Childhood averaged 7.5/10. High school 7.3. University 6.6. Post-2020 dropped to 4.5. "
          "The decline was steady — except for 2020 itself, which scored 10. "
          "Distance reduced the quality of the relationship, but not all at once."),
-        ("There is only one Regret in 27 years — and it sits right before he died",
+        ("There is only one Regret in 27 years and it is right before he died",
          "In 2019 I planned to bring BaBa a bottle of liquor after my exams. I never did. "
          "That is the only Regret record in the entire dataset. "
          "His health that year looked fine. There was no warning."),
@@ -611,10 +611,10 @@ elif page == "🎯 Decision-Making":
     st.markdown("<div class='section-header'>Three things I will do differently</div>", unsafe_allow_html=True)
 
     decisions = [
-        ("Visit the people I love — and put it in the calendar",
+        ("Visit the people you love before it is too late",
          "Visits dropped 96% from age 10 to BaBa's last year. During university, I averaged 4 visits a year. "
          "I kept telling myself I would go soon. The data shows I never went more than I planned to. "
-         "From now on, I will set fixed dates to visit people I care about — not leave it open.",
+         "From now on, I will set fixed dates to visit people I care about and I will not leave it open.",
          "#5B9E8F"),
         ("Do the kind thing now, not later",
          "2019 is the only Regret in 27 years of data. I had a simple plan — bring BaBa a bottle of liquor after exams. I did not do it. "
